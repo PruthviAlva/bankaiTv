@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Server for the bankai Website",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "db:push": "prisma db push",
+    "db:gen": "prisma generate",
+    "db:studio": "prisma studio"
+  },
+  "keywords": [],
+  "author": "Pruthvi Alva",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "prisma": "^7.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
