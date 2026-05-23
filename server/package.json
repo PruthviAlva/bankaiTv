@@ -6,19 +6,20 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "db:push": "prisma db push",
-    "db:gen": "prisma generate",
-    "db:studio": "prisma studio"
+    "prisma:generate": "npx prisma generate",
+    "prisma:push": "npx prisma db push",
+    "prisma:studio": "npx prisma studio"
   },
   "keywords": [],
   "author": "Pruthvi Alva",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "^7.8.0",
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "prisma": "^7.8.0"
+    "prisma": "^5.22.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
