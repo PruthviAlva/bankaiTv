@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
             success: true,
             message: '✅ Bankai Server is healthy',
             timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV,
             database: 'connected',
         })
     } catch (err) {
