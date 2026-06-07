@@ -20,7 +20,6 @@ export default function Navbar() {
     { label: "Home", href: "/" },
     { label: "Anime", href: "/anime" },
     { label: "Manga", href: "/manga" },
-    { label: "Search", href: "/search" },
   ];
 
   return (
@@ -34,11 +33,7 @@ export default function Navbar() {
       <div className="mx-auto px-4 h-20 flex items-center gap-4">
         {/* Logo */}
         <Link to="/">
-          <img
-            src="/Anime_Logo.png"
-            alt="Anime Logo"
-            className="w-22 h-15"
-          />
+          <img src="/Anime_Logo.png" alt="Anime Logo" className="w-22 h-15" />
         </Link>
 
         {/* Nav Links — desktop */}

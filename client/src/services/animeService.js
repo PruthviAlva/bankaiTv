@@ -26,6 +26,23 @@ const animeService = {
 
     // Top upcoming ( not yet aired, sorted by popularity )
     getTopUpcomingAnime: (page = 1) => jikan.get(`/seasons/upcoming?limit=12&page=${page}`),
+
+    // All anime with filters (for /anime page)
+    getAnimeList: (page = 1, filters = {}) => {
+        const params = new URLSearchParams({ page, limit: 24, ...filters })
+        return jikan.get(`/anime?${params}`)
+    },
+
+    // Search
+    searchAnime: (query, page = 1, filters = {}) => {
+        const params = new URLSearchParams({
+            q: query,
+            page,
+            limit: 24,
+            ...filters,
+        })
+        return jikan.get(`/anime?${params}`)
+    },
 }
 
 export default animeService;

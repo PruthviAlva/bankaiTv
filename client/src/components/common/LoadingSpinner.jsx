@@ -1,4 +1,3 @@
-// client/src/components/common/LoadingSpinner.jsx
 export default function LoadingSpinner({ fullScreen = false, size = "md" }) {
   const sizes = { sm: "w-7 h-7", md: "w-10 h-10", lg: "w-14 h-14" };
 

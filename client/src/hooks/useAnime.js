@@ -31,3 +31,8 @@ export const useTopUpcomingAnime = () => useQuery({
     staleTime: 1000 * 60 * 30,  // Keep fresh for 30 minutes
     gcTime: 1000 * 60 * 60,     // Keep in cache for 1 hour
 })
+
+export const useAnimeList = (page, filters) => useQuery({
+    queryKey: ['anime-list', page, filters],
+    queryFn: () => animeService.getAnimeList(page, filters).then(r => r.data),
+})
