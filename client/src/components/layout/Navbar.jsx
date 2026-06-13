@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Menu, X, Shuffle, LogIn } from "lucide-react";
+import { Search, Menu, X, Shuffle, LogIn, LogOut, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+import { useAuth } from "../../context/AuthContext";
 
 export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -82,13 +85,32 @@ export default function Navbar() {
           </button>
 
           {/* Login button */}
-          <Link
-            to="/login"
-            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 font-semibold px-4 py-1.5 rounded-lg transition-colors"
-          >
-            <LogIn />
-            <span className="hidden sm:inline">Login</span>
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-300 hidden sm:block gap-1.5">
+                <User className="w-8 h-8" />
+                <span className="text-white font-semibold">
+                  {user.username}
+                </span>
+              </span>
+              <button
+                onClick={logout}
+                title="Logout"
+                className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+              <span className="hidden sm:inline">Login</span>
+            </Link>
+          )}
 
           {/* Mobile menu toggle */}
           <button
