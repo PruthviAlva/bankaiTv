@@ -30,7 +30,7 @@ export default function AnimeRow({
           : animeList.map((anime, index) => (
               <div
                 key={anime.mal_id}
-                className={`flex-shrink-0 ${showRank ? "w-75 pl-35" : "w-75"}`}
+                className={`flex-shrink-0 ${showRank ? "w-95 pl-35" : "w-60"}`}
               >
                 <AnimeCard
                   anime={anime}

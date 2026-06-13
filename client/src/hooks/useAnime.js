@@ -36,3 +36,9 @@ export const useAnimeList = (page, filters) => useQuery({
     queryKey: ['anime-list', page, filters],
     queryFn: () => animeService.getAnimeList(page, filters).then(r => r.data),
 })
+
+export const useAnimeDetails = (id) => useQuery({
+    queryKey: ['anime', id],
+    queryFn: () => animeService.getAnimeById(id).then(r => r.data),
+    enabled: !!id, // Don't run if id is undefined
+})

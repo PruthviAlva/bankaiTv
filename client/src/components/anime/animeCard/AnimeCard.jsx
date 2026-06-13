@@ -22,9 +22,9 @@ export default function AnimeCard({ anime, type = "anime", rank = null }) {
         {/* Rank number — shown in Top 10 row */}
         {rank && (
           <div
-            className="absolute -left-27 z-10 font-black"
+            className="absolute -left-30 z-10 font-black"
             style={{
-              fontSize: "15rem",
+              fontSize: "20rem",
               color: "transparent",
               WebkitTextStroke: "8px rgba(64, 64, 64, 1.0)",
               lineHeight: 1,

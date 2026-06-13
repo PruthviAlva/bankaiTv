@@ -1,8 +1,8 @@
 import { useSearchParams } from "react-router-dom";
-import FilterTabs from "../components/common/FilterTabs";
-import Anime_MangaGrid from "../components/grid/Anime_MangaGrid";
-import Pagination from "../components/common/Pagination";
-import { useMangaList } from "../hooks/useManga";
+import FilterTabs from "../../components/common/FilterTabs";
+import Anime_MangaGrid from "../../components/grid/Anime_MangaGrid";
+import Pagination from "../../components/common/Pagination";
+import { useMangaList } from "../../hooks/useManga";
 
 const TABS = [
   { label: "Top Manga", value: "manga" },

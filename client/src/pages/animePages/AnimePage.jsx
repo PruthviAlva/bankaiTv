@@ -1,10 +1,10 @@
 import { useSearchParams } from "react-router-dom";
 
-import FilterTabs from "../components/common/FilterTabs";
-import Anime_MangaGrid from "../components/grid/Anime_MangaGrid";
-import Pagination from "../components/common/Pagination";
+import FilterTabs from "../../components/common/FilterTabs";
+import Anime_MangaGrid from "../../components/grid/Anime_MangaGrid";
+import Pagination from "../../components/common/Pagination";
 
-import { useAnimeList } from "../hooks/useAnime";
+import { useAnimeList } from "../../hooks/useAnime";
 
 // Tab definitions — each maps to Jikan API filter params
 const TABS = [
@@ -59,7 +59,7 @@ export default function AnimePage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 text-white">
+    <div className="max-w-auto mx-auto px-4 py-6 text-white">
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-black text-white mb-1">Anime</h1>

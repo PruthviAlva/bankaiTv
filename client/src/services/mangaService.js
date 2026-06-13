@@ -15,6 +15,11 @@ const jikanRaw = axios.create({
 const jikan = rateLimit(jikanRaw, { maxRequests: 1, perMilliseconds: 1000 })
 
 const mangaService = {
+
+    // Single manga details
+    getMangaById: (id) =>
+    jikan.get(`/manga/${id}/full`),
+
     // All manga with filters (for /manga page)
     getMangaList: (page = 1, filters = {}) => {
         const params = new URLSearchParams({ page, limit: 24, ...filters })

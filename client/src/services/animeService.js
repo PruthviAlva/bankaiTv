@@ -43,6 +43,9 @@ const animeService = {
         })
         return jikan.get(`/anime?${params}`)
     },
+
+    // Single anime details
+    getAnimeById: (id) => jikan.get(`/anime/${id}/full`),
 }
 
 export default animeService;
