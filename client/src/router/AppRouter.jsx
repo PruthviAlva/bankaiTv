@@ -21,6 +21,7 @@ const LoginPage = lazy(() => import("../pages/authenticationPages/LoginPage"));
 const RegisterPage = lazy(
   () => import("../pages/authenticationPages/RegisterPage"),
 );
+const WatchlistPage = lazy(() => import("../pages/users/WatchlistPage"));
 
 const NotFound = lazy(() => import("../pages/NotFound"));
 
@@ -45,6 +46,7 @@ export default function AppRouter() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/watchlist" element={<WatchlistPage />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

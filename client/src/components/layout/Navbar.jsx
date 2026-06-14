@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Menu, X, Shuffle, LogIn, LogOut, User } from "lucide-react";
+import {
+  Search,
+  Menu,
+  X,
+  Shuffle,
+  LogIn,
+  LogOut,
+  User,
+  List,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuth } from "../../context/AuthContext";
@@ -93,6 +102,13 @@ export default function Navbar() {
                   {user.username}
                 </span>
               </span>
+              <Link
+                to="/watchlist"
+                className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                title="My Watchlist"
+              >
+                <List className="w-4 h-4" /> Watchlist
+              </Link>
               <button
                 onClick={logout}
                 title="Logout"

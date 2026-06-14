@@ -1,11 +1,14 @@
 import { useParams, Link } from "react-router-dom";
-import { Star, Play, ArrowLeft, Heart } from "lucide-react";
+import { Star, Play, ArrowLeft } from "lucide-react";
 
 import { useAnimeDetails } from "../../hooks/useAnime";
 
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import YoutubePlayer from "../../components/anime/YoutubePlayer";
 import RelatedAnime from "../../components/anime/RelatedAnime";
+
+import WatchlistButton from "../../components/anime/users/WatchlistButton";
+import FavoriteButton from "../../components/anime/users/FavoriteButton";
 
 export default function AnimeDetailsPage() {
   const { id } = useParams();
@@ -46,7 +49,7 @@ export default function AnimeDetailsPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent" />
 
         {/* Hero Content */}
-        <div className="absolute inset-0 flex items-end pb-8 px-4 md:px-8">
+        <div className="absolute inset-0 flex items-center pb-8 px-4 md:px-8">
           <div className="max-w-7xl w-full mx-auto flex gap-6 items-end">
             {/* Cover poster */}
             <div className="hidden md:block flex-shrink-0 w-70 rounded-xl overflow-hidden shadow-2xl border border-white/10">
@@ -116,9 +119,8 @@ export default function AnimeDetailsPage() {
                 <button className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors">
                   <Play className="w-4 h-4 fill-white" /> Watch Now
                 </button>
-                <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors">
-                  <Heart className="w-4 h-4" /> Favorite
-                </button>
+                <WatchlistButton anime={anime} />
+                <FavoriteButton anime={anime} type="ANIME" />
               </div>
             </div>
           </div>
