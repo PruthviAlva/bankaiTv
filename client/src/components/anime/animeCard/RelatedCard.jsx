@@ -2,19 +2,27 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import animeService from "../../../services/animeService";
 
-export default function RelatedCard({ entry }) {
+export default function RelatedCard({ entry, source = "jikan" }) {
+  const isAniList = source === "anilist" || entry.source === "anilist";
   const { data } = useQuery({
-    queryKey: ["anime", String(entry.mal_id)],
-    queryFn: () => animeService.getAnimeById(entry.mal_id).then((r) => r.data),
+    queryKey: ["anime", isAniList ? "anilist" : "jikan", String(isAniList ? entry.id : entry.mal_id)],
+    queryFn: () => (
+      isAniList
+        ? animeService.getAniListAnimeById(entry.id)
+        : animeService.getAnimeById(entry.mal_id)
+    ).then((r) => r.data),
     staleTime: 1000 * 60 * 30, // 30 min — related anime rarely changes
   });
 
   const anime = data?.data;
-  const cover = anime?.images?.jpg?.image_url;
+  const cover = anime?.images?.jpg?.image_url || entry.images?.jpg?.image_url;
   const title = anime?.title_english || anime?.title || entry.name;
+  const href = isAniList
+    ? `/anime/anilist/${entry.id}`
+    : `/anime/${entry.mal_id}`;
 
   return (
-    <Link to={`/anime/${entry.mal_id}`} className="group">
+    <Link to={href} className="group">
       <div className="rounded-lg overflow-hidden aspect-[2/3] bg-white/5 mb-2">
         {cover ? (
           <img

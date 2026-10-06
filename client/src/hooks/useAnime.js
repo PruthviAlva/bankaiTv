@@ -37,8 +37,12 @@ export const useAnimeList = (page, filters) => useQuery({
     queryFn: () => animeService.getAnimeList(page, filters).then(r => r.data),
 })
 
-export const useAnimeDetails = (id) => useQuery({
-    queryKey: ['anime', id],
-    queryFn: () => animeService.getAnimeById(id).then(r => r.data),
+export const useAnimeDetails = (id, source = 'jikan') => useQuery({
+    queryKey: ['anime', source, id],
+    queryFn: () => (
+        source === 'anilist'
+            ? animeService.getAniListAnimeById(id)
+            : animeService.getAnimeById(id)
+    ).then(r => r.data),
     enabled: !!id, // Don't run if id is undefined
 })

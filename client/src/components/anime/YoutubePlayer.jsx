@@ -1,4 +1,4 @@
-import { ExternalLink, PlayCircle } from "lucide-react";
+import { PlayCircle } from "lucide-react";
 
 export default function YoutubePlayer({ trailer, title }) {
   // If no trailer available
@@ -10,19 +10,11 @@ export default function YoutubePlayer({ trailer, title }) {
           Trailer
         </h2>
         <div
-          className="rounded-xl p-8 flex flex-col items-center gap-3 text-center border border-white/5"
+          className="flex flex-col items-center gap-3 rounded-xl border border-white/5 p-8 text-center"
           style={{ backgroundColor: "var(--color-surface-2)" }}
         >
           <PlayCircle className="w-10 h-10 text-gray-600" />
           <p className="text-gray-400">No trailer available for this anime.</p>
-          <a
-            href={`https://www.youtube.com/results?search_query=${encodeURIComponent(title)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-400 text-sm"
-          >
-            Search on YouTube <ExternalLink className="w-3 h-3" />
-          </a>
         </div>
       </section>
     );
@@ -35,7 +27,7 @@ export default function YoutubePlayer({ trailer, title }) {
         Trailer
       </h2>
       <div
-        className="relative w-full max-w-6xl aspect-video rounded-xl overflow-hidden
+        className="relative aspect-video w-full max-w-4xl overflow-hidden rounded-xl
                             border border-anime-border"
       >
         <iframe

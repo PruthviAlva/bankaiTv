@@ -1,43 +1,97 @@
-import RelatedCard from "./animeCard/RelatedCard";
+import AnimeRow from "./AnimeRow";
 
-export default function RelatedAnime({ relations = [] }) {
-  // Filter to only sequel/prequel/side story — most useful relations
-  const usefulRelations =
-    relations?.filter((r) =>
-      [
-        "Sequel",
-        "Prequel",
-        "Side Story",
-        "Alternative Version",
-        "Summary",
-      ].includes(r.relation),
-    ) || [];
+const normalizeSeriesTitle = (title = "") =>
+  (title || "")
+    .toLocaleLowerCase()
+    .replace(/\b(?:season|part|cour)\s+\d+\b.*$/i, "")
+    .replace(/\b\d+(?:st|nd|rd|th)\s+season\b.*$/i, "")
+    .replace(/\s+(?:i{1,3}|iv|v)(?=:)/gi, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  if (usefulRelations.length === 0) return null;
+const toAnimeCardData = (entry, source) => {
+  const title =
+    entry.name ||
+    entry.title_english ||
+    entry.title?.english ||
+    entry.title?.romaji ||
+    entry.title;
+  const animeSource = entry.source || source;
 
-  // Flatten all entries from all relation groups
-  const relatedEntries = usefulRelations
-    .flatMap((r) =>
-      r.entry
-        .filter((e) => e.type === "anime")
-        .map((e) => ({ ...e, relation: r.relation })),
+  return {
+    ...entry,
+    id: entry.id ?? (animeSource === "anilist" ? entry.mal_id : undefined),
+    mal_id: entry.mal_id ?? entry.id,
+    source: animeSource,
+    title,
+    type: entry.format ?? entry.type,
+    score:
+      entry.score ??
+      (entry.averageScore ? entry.averageScore / 10 : undefined),
+  };
+};
+
+export default function RelatedAnime({
+  relations = [],
+  recommendations = [],
+  source = "jikan",
+  animeTitle = "",
+  animeId,
+  showSeasons = true,
+  showRecommendations = true,
+}) {
+  const normalizedAnimeTitles = (Array.isArray(animeTitle) ? animeTitle : [animeTitle])
+    .map(normalizeSeriesTitle)
+    .filter(Boolean);
+  const seenSeasonIds = new Set([animeId].filter(Boolean));
+  const seasons = (relations ?? [])
+    .filter(({ relation }) => ["Sequel", "Prequel"].includes(relation))
+    .flatMap(({ relation, entry = [] }) =>
+      entry
+        .filter((anime) => {
+          const relatedTitles = [
+            anime.name,
+            anime.title_english,
+            anime.title?.english,
+            anime.title_romaji,
+            anime.title?.romaji,
+            anime.title,
+          ]
+            .map(normalizeSeriesTitle)
+            .filter(Boolean);
+          return (
+            anime.type === "anime" &&
+            !seenSeasonIds.has(anime.id ?? anime.mal_id) &&
+            relatedTitles.some((relatedTitle) =>
+              normalizedAnimeTitles.some(
+                (seriesTitle) =>
+                  relatedTitle.includes(seriesTitle) ||
+                  seriesTitle.includes(relatedTitle),
+              ),
+            )
+          );
+        })
+        .map((anime) => {
+          seenSeasonIds.add(anime.id ?? anime.mal_id);
+          return { ...toAnimeCardData(anime, source), relation };
+        }),
     )
-    .slice(0, 10); // max 10
+    .slice(0, 10);
 
-  if (relatedEntries.length === 0) return null;
+  const suggestedAnime = (recommendations ?? [])
+    .filter((anime) => anime.type === "anime" && anime.name)
+    .slice(0, 10)
+    .map((anime) => toAnimeCardData(anime, source));
 
   return (
-    <section>
-      <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <div className="w-1 h-5 bg-blue-500 rounded-full" />
-        Related Anime
-      </h2>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {relatedEntries.map((entry) => (
-          <RelatedCard key={entry.mal_id} entry={entry} />
-        ))}
-      </div>
-    </section>
+    <>
+      {showSeasons && seasons.length > 0 && (
+        <AnimeRow title="Seasons" animeList={seasons} />
+      )}
+      {showRecommendations && suggestedAnime.length > 0 && (
+        <AnimeRow title="You may like" animeList={suggestedAnime} />
+      )}
+    </>
   );
 }

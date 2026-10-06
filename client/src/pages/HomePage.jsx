@@ -11,18 +11,31 @@ import HeroBanner from "../components/anime/HeroBanner";
 import AnimeRow from "../components/anime/AnimeRow";
 
 export default function HomePage() {
-  const { data: topAnime, isLoading: loadingTopAnime } = useTopAnime(10);
-  const { data: trendingAnime, isLoading: loadingTrendingAnime } =
-    useTrendingAnime();
-  const { data: latestEpisodes, isLoading: loadingLatestEpisodes } =
-    useLatestEpisodes();
-  const { data: topUpcomingAnime, isLoading: loadingTopUpcomingAnime } =
-    useTopUpcomingAnime();
+  const {
+    data: topAnime,
+    isLoading: loadingTopAnime,
+    error: topAnimeError,
+  } = useTopAnime(10);
+  const {
+    data: trendingAnime,
+    isLoading: loadingTrendingAnime,
+    error: trendingAnimeError,
+  } = useTrendingAnime();
+  const {
+    data: latestEpisodes,
+    isLoading: loadingLatestEpisodes,
+    error: latestEpisodesError,
+  } = useLatestEpisodes();
+  const {
+    data: topUpcomingAnime,
+    isLoading: loadingTopUpcomingAnime,
+    error: topUpcomingAnimeError,
+  } = useTopUpcomingAnime();
 
   return (
-    <div className="mx-auto px-4 py-6">
+    <div className="mx-auto w-full max-w-screen-2xl px-3 py-4 sm:px-4 sm:py-6">
       {/* Hero Banner — rotates through currently airing anime */}
-      <HeroBanner animeList={topAnime?.data || []} />
+      <HeroBanner animeList={topAnime?.data || []} error={topAnimeError} />
 
       {/* Top 10 Anime Row */}
       <AnimeRow
@@ -30,6 +43,7 @@ export default function HomePage() {
         viewAllLink="/anime"
         animeList={topAnime?.data || []}
         isLoading={loadingTopAnime}
+        error={topAnimeError}
         showRank={true}
       />
 
@@ -40,6 +54,7 @@ export default function HomePage() {
         icon={Flame}
         animeList={trendingAnime?.data || []}
         isLoading={loadingTrendingAnime}
+        error={trendingAnimeError}
       />
 
       {/* Latest Episodes */}
@@ -49,6 +64,7 @@ export default function HomePage() {
         icon={Clock}
         animeList={latestEpisodes?.data || []}
         isLoading={loadingLatestEpisodes}
+        error={latestEpisodesError}
       />
 
       {/* Top Upcoming */}
@@ -58,6 +74,7 @@ export default function HomePage() {
         icon={Calendar}
         animeList={topUpcomingAnime?.data || []}
         isLoading={loadingTopUpcomingAnime}
+        error={topUpcomingAnimeError}
       />
     </div>
   );

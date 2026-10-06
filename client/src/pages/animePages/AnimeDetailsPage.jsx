@@ -10,9 +10,10 @@ import RelatedAnime from "../../components/anime/RelatedAnime";
 import WatchlistButton from "../../components/anime/users/WatchlistButton";
 import FavoriteButton from "../../components/anime/users/FavoriteButton";
 
-export default function AnimeDetailsPage() {
+export default function AnimeDetailsPage({ source = "jikan" }) {
   const { id } = useParams();
-  const { data, isLoading, isError } = useAnimeDetails(id);
+  const animeSource = source === "anilist" ? "anilist" : "jikan";
+  const { data, isLoading, isError } = useAnimeDetails(id, animeSource);
 
   if (isLoading) return <LoadingSpinner fullScreen />;
 
@@ -29,9 +30,27 @@ export default function AnimeDetailsPage() {
   }
 
   const anime = data.data;
-  const title = anime.title_english || anime.title;
-  const backdrop = anime.images?.jpg?.large_image_url;
+  const title =
+    anime.title_english ||
+    anime.title?.english ||
+    anime.title?.romaji ||
+    anime.title;
+  const relatedTitles = [
+    anime.title_english,
+    anime.title_romaji,
+    anime.title?.english,
+    anime.title?.romaji,
+    title,
+  ].filter(Boolean);
+  const backdrop = anime.banner_image || anime.images?.jpg?.large_image_url;
+  const poster =
+    anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url;
   const trailer = anime.trailer;
+  const synopsis = anime.synopsis?.trim() || "No synopsis available.";
+  const synopsisWords = synopsis.trim().split(/\s+/);
+  const displaySynopsis = synopsisWords.length > 99
+    ? `${synopsisWords.slice(0, 99).join(" ")}...`
+    : synopsis;
 
   return (
     <div className="min-h-screen">
@@ -39,7 +58,7 @@ export default function AnimeDetailsPage() {
       <div className="relative h-[75vh] overflow-hidden">
         {/* Backdrop image */}
         <img
-          src={backdrop}
+          src={backdrop || poster}
           alt={title}
           className="w-full h-full object-cover object-top"
         />
@@ -50,11 +69,11 @@ export default function AnimeDetailsPage() {
 
         {/* Hero Content */}
         <div className="absolute inset-0 flex items-center pb-8 px-4 md:px-8">
-          <div className="max-w-7xl w-full mx-auto flex gap-6 items-end">
+          <div className="mx-auto flex w-full max-w-6xl items-end gap-6">
             {/* Cover poster */}
-            <div className="hidden md:block flex-shrink-0 w-70 rounded-xl overflow-hidden shadow-2xl border border-white/10">
+            <div className="hidden md:block flex-shrink-0 w-56 rounded-xl overflow-hidden shadow-2xl border border-white/10">
               <img
-                src={backdrop}
+                src={poster}
                 alt={title}
                 className="w-full aspect-[2/3] object-cover"
               />
@@ -64,7 +83,7 @@ export default function AnimeDetailsPage() {
             <div className="flex-1 min-w-0">
               {/* Back link */}
               <Link
-                to="/"
+                to="/anime"
                 className="inline-flex items-center gap-1 text-gray-400 hover:text-white mb-3 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -73,7 +92,7 @@ export default function AnimeDetailsPage() {
 
               {/* Genres */}
               <div className="flex flex-wrap gap-2 mb-3">
-                {anime.genres?.slice(0, 4).map((genre) => (
+                {anime.genres?.map((genre) => (
                   <span
                     key={genre.mal_id}
                     className="text-xs px-2 py-0.5 bg-blue-500/50 text-white border border-blue-500/30 rounded-full"
@@ -90,7 +109,7 @@ export default function AnimeDetailsPage() {
 
               {/* Meta row */}
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 mb-4">
-                {anime.score && (
+                {anime.score != null && (
                   <span className="flex items-center gap-1 text-yellow-400 font-semibold">
                     <Star className="w-4 h-4 fill-yellow-400" />
                     {anime.score}
@@ -104,9 +123,11 @@ export default function AnimeDetailsPage() {
                 {anime.status && <span>{anime.status}</span>}
                 {anime.season && (
                   <span className="capitalize">
-                    {anime.season} {anime.year}
+                    {anime.season} {anime.year || anime.seasonYear}
                   </span>
                 )}
+                {anime.episodes && <span>{anime.episodes} episodes</span>}
+                {anime.duration && <span>{anime.duration} min / episode</span>}
                 {anime.studios?.[0] && (
                   <span className="text-orange-400">
                     {anime.studios[0].name}
@@ -128,19 +149,45 @@ export default function AnimeDetailsPage() {
       </div>
 
       {/* ── Main Content ──────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-10">
+      <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-8 md:px-8">
         {/* Synopsis */}
         <section>
           <p className="text-gray-400 leading-relaxed">
-            {anime.synopsis || "No synopsis available."}
+            {displaySynopsis}
           </p>
         </section>
+
+        {[anime.title_english, anime.title_romaji, anime.title_native]
+          .filter((value, index, titles) => value && titles.indexOf(value) === index)
+          .length > 1 && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold">Alternate titles</h2>
+              <ul className="space-y-1 text-sm text-gray-400">
+                {[anime.title_english, anime.title_romaji, anime.title_native]
+                  .filter((value, index, titles) => value && titles.indexOf(value) === index)
+                  .map((alternateTitle) => (
+                    <li key={alternateTitle}>{alternateTitle}</li>
+                  ))}
+              </ul>
+            </section>
+          )}
+
+        <RelatedAnime
+          relations={anime.relations}
+          source={animeSource}
+          animeTitle={relatedTitles}
+          animeId={anime.id ?? anime.mal_id}
+          showRecommendations={false}
+        />
 
         {/* YouTube Player */}
         {trailer && <YoutubePlayer trailer={trailer} title={title} />}
 
-        {/* Related Anime */}
-        <RelatedAnime relations={anime.relations} />
+        <RelatedAnime
+          recommendations={anime.recommendations}
+          source={animeSource}
+          showSeasons={false}
+        />
       </div>
     </div>
   );

@@ -42,6 +42,10 @@ export default function AppRouter() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/anime" element={<AnimePage />} />
+              <Route
+                path="/anime/anilist/:id"
+                element={<AnimeDetailsPage source="anilist" />}
+              />
               <Route path="/anime/:id" element={<AnimeDetailsPage />} />
               <Route path="/manga" element={<MangaPage />} />
               <Route path="/manga/:id" element={<MangaDetailsPage />} />

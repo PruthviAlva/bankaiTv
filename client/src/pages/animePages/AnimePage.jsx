@@ -6,7 +6,7 @@ import Pagination from "../../components/common/Pagination";
 
 import { useAnimeList } from "../../hooks/useAnime";
 
-// Tab definitions — each maps to Jikan API filter params
+// Tab definitions — each maps to AniList sorting and media filters.
 const TABS = [
   { label: "Trending", value: "trending" },
   { label: "Top Rated", value: "top" },
@@ -16,23 +16,23 @@ const TABS = [
   { label: "Upcoming", value: "upcoming" },
 ];
 
-// Map tab value → Jikan API params
+// Map tab value to AniList filter variables.
 const getFilters = (tab) => {
   switch (tab) {
     case "trending":
-      return { status: "airing", order_by: "score", sort: "desc" };
+      return { sort: "TRENDING_DESC" };
     case "top":
-      return { order_by: "score", sort: "desc" };
+      return { sort: "SCORE_DESC" };
     case "movie":
-      return { type: "movie", order_by: "score", sort: "desc" };
+      return { format: "MOVIE", sort: "SCORE_DESC" };
     case "tv":
-      return { type: "tv", order_by: "score", sort: "desc" };
+      return { format: "TV", sort: "SCORE_DESC" };
     case "ova":
-      return { type: "ova", order_by: "score", sort: "desc" };
+      return { format: "OVA", sort: "SCORE_DESC" };
     case "upcoming":
-      return { status: "upcoming", order_by: "members", sort: "desc" };
+      return { status: "NOT_YET_RELEASED", sort: "POPULARITY_DESC" };
     default:
-      return {};
+      return { sort: "TRENDING_DESC" };
   }
 };
 
@@ -42,10 +42,10 @@ export default function AnimePage() {
   const activeTab = searchParams.get("tab") || "trending";
 
   const filters = getFilters(activeTab);
-  const { data, isLoading } = useAnimeList(currentPage, filters);
+  const { data, isLoading, isError, error } = useAnimeList(currentPage, filters);
 
   const items = data?.data || [];
-  const totalPages = Math.min(data?.pagination?.last_visible_page || 1, 20); // Jikan caps at ~20
+  const totalPages = Math.min(data?.pagination?.last_visible_page || 1, 20);
 
   const handleTabChange = (tab) => {
     // Reset to page 1 when switching tabs
@@ -78,14 +78,22 @@ export default function AnimePage() {
       </div>
 
       {/* Grid */}
-      <Anime_MangaGrid items={items} isLoading={isLoading} type="anime" />
+      {isError ? (
+        <p role="alert" className="py-6 text-gray-400">
+          Unable to load anime from AniList. {error?.message}
+        </p>
+      ) : (
+        <Anime_MangaGrid items={items} isLoading={isLoading} type="anime" />
+      )}
 
       {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      {!isError && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </div>
   );
 }

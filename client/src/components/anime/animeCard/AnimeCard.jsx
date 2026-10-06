@@ -2,15 +2,25 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Star, Play, BookOpen, Tv } from "lucide-react";
 
-export default function AnimeCard({ anime, type = "anime", rank = null }) {
+export default function AnimeCard({ anime, type = "anime" }) {
   // Jikan returns slightly different shapes for anime vs manga
-  const id = anime.mal_id;
-  const title = anime.title_english || anime.title;
+  const isAniList = anime.source === "anilist";
+  const id = isAniList ? anime.id : anime.mal_id ?? anime.id;
+  const title =
+    anime.title_english ||
+    anime.title?.english ||
+    anime.title?.romaji ||
+    anime.title;
   const coverImage =
-    anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url;
-  const rating = anime.score;
+    anime.images?.jpg?.large_image_url ||
+    anime.images?.jpg?.image_url ||
+    anime.coverImage?.extraLarge ||
+    anime.coverImage?.large;
+  const rating = anime.score ?? (anime.averageScore ? anime.averageScore / 10 : null);
   const episodes = type === "anime" ? anime.episodes : anime.chapters;
-  const href = `/${type}/${id}`;
+  const href = isAniList
+    ? `/anime/anilist/${id}`
+    : `/${type}/${id}`;
 
   return (
     <motion.div
@@ -19,21 +29,6 @@ export default function AnimeCard({ anime, type = "anime", rank = null }) {
       className="relative group"
     >
       <Link to={href} className="block">
-        {/* Rank number — shown in Top 10 row */}
-        {rank && (
-          <div
-            className="absolute -left-30 z-10 font-black"
-            style={{
-              fontSize: "20rem",
-              color: "transparent",
-              WebkitTextStroke: "8px rgba(64, 64, 64, 1.0)",
-              lineHeight: 1,
-            }}
-          >
-            {rank}
-          </div>
-        )}
-
         {/* Card image */}
         <div className="relative overflow-hidden z-11 rounded-lg aspect-[2/3] bg-surface-2">
           <img
@@ -83,7 +78,7 @@ export default function AnimeCard({ anime, type = "anime", rank = null }) {
               {type && (
                 <span className="flex items-center gap-1">
                   <BookOpen size={12} />
-                  {type}
+                  {anime.type || type}
                 </span>
               )}
             </div>
