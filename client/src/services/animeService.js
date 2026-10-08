@@ -303,6 +303,65 @@ const getAniListAnimePage = async (page, filters = {}) => {
     }
 }
 
+const searchAniListAnime = async (search, page = 1, filters = {}) => {
+    const variables = {
+        search,
+        page,
+        perPage: 24,
+        sort: ['SEARCH_MATCH'],
+    }
+    const variableDefinitions = [
+        '$search: String!',
+        '$page: Int!',
+        '$perPage: Int!',
+        '$sort: [MediaSort]!',
+    ]
+    const mediaFilters = [
+        'search: $search',
+        'type: ANIME',
+        'sort: $sort',
+        'isAdult: false',
+    ]
+
+    if (filters.status) {
+        variableDefinitions.push('$status: MediaStatus')
+        variables.status = filters.status
+        mediaFilters.push('status: $status')
+    }
+
+    const data = await fetchAniListMedia(`
+        query SearchAnime(${variableDefinitions.join(', ')}) {
+            Page(page: $page, perPage: $perPage) {
+                pageInfo {
+                    currentPage
+                    lastPage
+                    hasNextPage
+                    total
+                }
+                media(${mediaFilters.join(', ')}) {
+                    ${aniListMediaFields}
+                }
+            }
+        }
+    `, variables)
+    const resultPage = data?.Page
+    if (!Array.isArray(resultPage?.media)) {
+        throw new Error('Unexpected response from AniList anime search')
+    }
+
+    return {
+        data: {
+            data: resultPage.media.map(normalizeAniListAnime),
+            pagination: {
+                last_visible_page: resultPage.pageInfo?.lastPage ?? 1,
+                current_page: resultPage.pageInfo?.currentPage ?? page,
+                has_next_page: resultPage.pageInfo?.hasNextPage ?? false,
+                total: resultPage.pageInfo?.total ?? 0,
+            },
+        },
+    }
+}
+
 const normalizeAniListAnime = (media) => {
     const dateString = (date) => (
         date?.year
@@ -409,15 +468,8 @@ const animeService = {
     getAnimeList: (page = 1, filters = {}) => getAniListAnimePage(page, filters),
 
     // Search
-    searchAnime: (query, page = 1, filters = {}) => {
-        const params = new URLSearchParams({
-            q: query,
-            page,
-            limit: 24,
-            ...filters,
-        })
-        return jikan.get(`/anime?${params}`)
-    },
+    searchAnime: (query, page = 1, filters = {}) =>
+        searchAniListAnime(query, page, filters),
 
     // Single anime details
     getAnimeById: async (id) => {
