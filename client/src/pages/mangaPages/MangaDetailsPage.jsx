@@ -1,148 +1,210 @@
+import { useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useRef } from "react";
-import { ArrowLeft, Star, BookOpen, Heart } from "lucide-react";
+import { ArrowLeft, BookOpen, Star } from "lucide-react";
 
 import { useMangaDetails } from "../../hooks/useManga";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import AnimeRow from "../../components/anime/AnimeRow";
 
-export default function MangaDetailsPage() {
+const getShortSynopsis = (synopsis = "") => {
+  const words = synopsis.trim().split(/\s+/).filter(Boolean);
+  return words.length > 99 ? `${words.slice(0, 99).join(" ")}...` : synopsis;
+};
+
+export default function MangaDetailsPage({ source = "jikan" }) {
   const { id } = useParams();
-  const { data, isLoading, isError } = useMangaDetails(id);
-  const readerRef = useRef(null);
+  const { data, isLoading, isError } = useMangaDetails(id, source);
+  const chaptersRef = useRef(null);
+  const [visibleChapterCount, setVisibleChapterCount] = useState(20);
 
-  const scrollToReader = () => {
-    readerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollToChapters = () => {
+    chaptersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   if (isLoading) return <LoadingSpinner fullScreen />;
 
   if (isError || !data?.data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <p className="text-gray-400">Failed to load manga details.</p>
         <Link to="/manga" className="text-blue-500 hover:underline">
-          <ArrowLeft className="w-4 h-4" /> Back to Manga
+          <ArrowLeft className="h-4 w-4" />
+          Back to Manga
         </Link>
       </div>
     );
   }
 
   const manga = data.data;
-  const title = manga.title_english || manga.title;
-  const backdrop = manga.images?.jpg?.large_image_url;
+  const title = manga.title_english || manga.title || "Untitled";
+  const poster =
+    manga.images?.jpg?.large_image_url || manga.images?.jpg?.image_url;
+  const synopsis = getShortSynopsis(manga.synopsis || "No synopsis available.");
+  const chapters = manga.chapters || [];
+  const authors = manga.authors || [];
 
   return (
     <div className="min-h-screen">
-      {/* Hero Banner */}
       <div className="relative h-[75vh] overflow-hidden">
-        <img
-          src={backdrop}
-          alt={title}
-          className="w-full h-full object-cover object-top"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/60 to-black/20" />
+        {poster && (
+          <img
+            src={poster}
+            alt=""
+            aria-hidden="true"
+            className="h-full w-full object-cover object-top"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent" />
 
-        <div className="absolute inset-0 flex items-end pb-8 px-4 md:px-8">
-          <div className="max-w-7xl w-full mx-auto flex gap-6 items-end">
-            {/* Cover poster */}
-            <div className="hidden md:block flex-shrink-0 w-70 rounded-xl overflow-hidden shadow-2xl border border-white/10">
-              <img
-                src={backdrop}
-                alt={title}
-                className="w-full aspect-[2/3] object-cover"
-              />
-            </div>
+        <div className="absolute inset-0 flex items-end px-4 pb-8 md:px-8">
+          <div className="mx-auto flex w-full max-w-6xl items-end gap-6">
+            {poster && (
+              <div className="hidden w-56 flex-shrink-0 overflow-hidden rounded-xl border border-white/10 shadow-2xl md:block">
+                <img
+                  src={poster}
+                  alt={`${title} cover`}
+                  className="aspect-[2/3] w-full object-cover"
+                />
+              </div>
+            )}
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <Link
                 to="/manga"
-                className="inline-flex items-center gap-1 text-gray-400 hover:text-white mb-3 transition-colors"
+                className="mb-3 inline-flex items-center gap-1 text-gray-400 transition-colors hover:text-white"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 Back to Manga
               </Link>
 
-              <div className="flex flex-wrap gap-2 mb-2">
-                {manga.genres?.slice(0, 4).map((g) => (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {manga.genres?.map((genre) => (
                   <span
-                    key={g.mal_id}
-                    className="text-xs px-2 py-0.5 rounded-md bg-blue-500/20 border border-blue-500/30"
+                    key={genre.mal_id ?? genre.name}
+                    className="rounded-full border border-blue-500/30 bg-blue-500/20 px-2 py-0.5 text-xs text-white"
                   >
-                    {g.name}
+                    {genre.name}
                   </span>
                 ))}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-black text-white leading-tight mb-2">
+              <h1 className="mb-2 text-3xl font-black leading-tight text-white md:text-4xl">
                 {title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 mb-4">
-                {manga.score && (
-                  <span className="flex items-center gap-1 text-yellow-400 font-semibold">
-                    <Star className="w-4 h-4 fill-yellow-400" /> {manga.score}
+              <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-300">
+                {manga.score != null && (
+                  <span className="flex items-center gap-1 font-semibold text-yellow-400">
+                    <Star className="h-4 w-4 fill-yellow-400" />
+                    {manga.score}
                   </span>
                 )}
                 {manga.type && (
-                  <span className="bg-white/10 px-2 py-0.5 rounded">
+                  <span className="rounded bg-white/10 px-2 py-0.5">
                     {manga.type}
                   </span>
                 )}
                 {manga.status && <span>{manga.status}</span>}
-                {manga.authors?.[0] && (
-                  <span className="text-blue-400">{manga.authors[0].name}</span>
-                )}
+                {manga.year && <span>{manga.year}</span>}
               </div>
 
-              <div className="flex gap-3">
+              {chapters.length > 0 && (
                 <button
-                  onClick={scrollToReader}
-                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors"
+                  type="button"
+                  onClick={scrollToChapters}
+                  className="flex items-center gap-2 rounded-lg bg-blue-500 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-blue-600"
                 >
-                  <BookOpen className="w-4 h-4" /> Start Reading
+                  <BookOpen className="h-4 w-4" />
+                  View Chapters
                 </button>
-                <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors">
-                  <Heart className="w-4 h-4" /> Favorite
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-10">
-        {/* Synopsis */}
+      <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-8 md:px-8">
         <section>
-          <p className="text-gray-400 leading-relaxed max-w-4xl">
-            {manga.synopsis || "No synopsis available."}
-          </p>
+          <p className="max-w-4xl leading-relaxed text-gray-400">{synopsis}</p>
         </section>
 
-        {/* Reader placeholder coming soon! */}
-        <section ref={readerRef}>
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <div className="w-1 h-5 bg-blue-500 rounded-full" />
-            Read Online
+        {authors.length > 0 && (
+          <section>
+            <h2 className="mb-4 flex items-center gap-3 text-xl font-bold text-white">
+              <span className="h-9 w-1 rounded-full bg-blue-500" />
+              Authors
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {authors.map(({ name }) => (
+                <span
+                  key={name}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-gray-300"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section ref={chaptersRef} className="scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-3 text-xl font-bold text-white">
+            <span className="h-9 w-1 rounded-full bg-blue-500" />
+            Chapters
           </h2>
-          <div
-            className="rounded-xl p-8 flex flex-col items-center gap-3 text-center border border-white/5"
-            style={{ backgroundColor: "var(--color-surface-2)" }}
-          >
-            <BookOpen className="w-10 h-10 text-gray-600" />
-            <p className="text-gray-500 text-sm">Coming soon...</p>
-            <a
-              href={`https://mangadex.org/search?q=${encodeURIComponent(title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:text-blue-400 text-sm"
-            >
-              Read on MangaDex →
-            </a>
-          </div>
+          {chapters.length > 0 ? (
+            <>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {chapters.slice(0, visibleChapterCount).map((chapter) => (
+                  <div
+                    key={chapter.id}
+                    className="flex items-center justify-between gap-4 rounded-lg border border-white/5 bg-white/[0.03] px-4 py-3"
+                  >
+                    <span className="text-sm font-medium text-gray-200">
+                      {chapter.title}
+                    </span>
+                    {chapter.publishedAt && (
+                      <time
+                        dateTime={chapter.publishedAt}
+                        className="flex-shrink-0 text-xs text-gray-500"
+                      >
+                        {new Date(chapter.publishedAt).toLocaleDateString()}
+                      </time>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {visibleChapterCount < chapters.length && (
+                <button
+                  type="button"
+                  onClick={() => setVisibleChapterCount(chapters.length)}
+                  className="mt-4 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  Show all {chapters.length} loaded chapters
+                </button>
+              )}
+              {manga.chaptersTruncated && (
+                <p className="mt-3 text-sm text-gray-500">
+                  Showing the latest {chapters.length} of {manga.chaptersTotal}{" "}
+                  chapters.
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-gray-400">
+              Chapter information is unavailable for this manga.
+            </p>
+          )}
         </section>
+
+        {manga.relations?.length > 0 && (
+          <AnimeRow
+            title="Related Manga"
+            animeList={manga.relations}
+            type="manga"
+          />
+        )}
       </div>
     </div>
   );

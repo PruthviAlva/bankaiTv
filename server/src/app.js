@@ -12,6 +12,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const healthRoutes = require('./routes/healthRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes')
+const mangaRoutes = require('./routes/mangaRoutes')
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/health', healthRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/manga', mangaRoutes)
 
 // ─── Error Handling ─────
 app.use(errorHandler)

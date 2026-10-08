@@ -3,10 +3,14 @@ import mangaService from '../services/mangaService';
 
 // Each hook wraps a service call with a unique cache key
 // TanStack Query automatically caches, dedupes, and refetches
-export const useMangaDetails = (id) =>
+export const useMangaDetails = (id, source = 'jikan') =>
     useQuery({
-        queryKey: ['manga', id],
-        queryFn: () => mangaService.getMangaById(id).then(r => r.data),
+        queryKey: ['manga', source, id],
+        queryFn: () => (
+            source === 'weebcentral'
+                ? mangaService.getWeebCentralMangaById(id)
+                : mangaService.getMangaById(id)
+        ).then(r => r.data),
         enabled: !!id,
     })
 

@@ -20,6 +20,10 @@ export default function YoutubePlayer({ trailer, title }) {
     );
   }
 
+  const trailerUrl = new URL(trailer.embed_url);
+  trailerUrl.searchParams.set("autoplay", "1");
+  trailerUrl.searchParams.delete("mute");
+
   return (
     <section className="mb-10">
       <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -31,11 +35,11 @@ export default function YoutubePlayer({ trailer, title }) {
                             border border-anime-border"
       >
         <iframe
-          src={trailer.embed_url}
+          src={trailerUrl.toString()}
           title={`${title} trailer`}
           className="w-full h-full"
           allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write;
+          allow="autoplay; accelerometer; clipboard-write;
                        encrypted-media; gyroscope; picture-in-picture"
         />
       </div>

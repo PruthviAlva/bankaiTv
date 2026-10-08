@@ -7,7 +7,8 @@ import { useMangaList } from "../../hooks/useManga";
 const TABS = [
   { label: "Top Manga", value: "manga" },
   { label: "Manhwa", value: "manhwa" },
-  { label: "Novels", value: "novel" },
+  { label: "Manhua", value: "manhua" },
+  { label: "OEL", value: "oel" },
   { label: "Publishing", value: "publishing" },
   { label: "Completed", value: "finished" },
 ];
@@ -15,15 +16,17 @@ const TABS = [
 const getFilters = (tab) => {
   switch (tab) {
     case "manga":
-      return { type: "manga", order_by: "score", sort: "desc" };
+      return { type: "Manga" };
     case "manhwa":
-      return { type: "manhwa", order_by: "score", sort: "desc" };
-    case "novel":
-      return { type: "novel", order_by: "score", sort: "desc" };
+      return { type: "Manhwa" };
+    case "manhua":
+      return { type: "Manhua" };
+    case "oel":
+      return { type: "OEL" };
     case "publishing":
-      return { status: "publishing", order_by: "score", sort: "desc" };
+      return { status: "Ongoing" };
     case "finished":
-      return { status: "complete", order_by: "score", sort: "desc" };
+      return { status: "Complete" };
     default:
       return {};
   }
@@ -35,10 +38,10 @@ export default function MangaPage() {
   const activeTab = searchParams.get("tab") || "manga";
 
   const filters = getFilters(activeTab);
-  const { data, isLoading } = useMangaList(currentPage, filters);
+  const { data, isLoading, isError } = useMangaList(currentPage, filters);
 
   const items = data?.data || [];
-  const totalPages = Math.min(data?.pagination?.last_visible_page || 1, 20);
+  const totalPages = data?.pagination?.last_visible_page || 1;
 
   const handleTabChange = (tab) => setSearchParams({ tab, page: "1" });
 
@@ -52,7 +55,7 @@ export default function MangaPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-black text-white mb-1">Manga</h1>
         <p className="text-gray-500 text-sm">
-          Explore manga, manhwa, and light novels
+          Explore manga, manhwa, manhua, and more
         </p>
       </div>
 
@@ -64,7 +67,12 @@ export default function MangaPage() {
         />
       </div>
 
-      <Anime_MangaGrid items={items} isLoading={isLoading} type="manga" />
+      <Anime_MangaGrid
+        items={items}
+        isLoading={isLoading}
+        error={isError ? "Unable to load manga from WeebCentral. Please try again." : null}
+        type="manga"
+      />
 
       <Pagination
         currentPage={currentPage}

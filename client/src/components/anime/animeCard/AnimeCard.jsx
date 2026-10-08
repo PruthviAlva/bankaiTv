@@ -20,6 +20,8 @@ export default function AnimeCard({ anime, type = "anime" }) {
   const episodes = type === "anime" ? anime.episodes : anime.chapters;
   const href = isAniList
     ? `/anime/anilist/${id}`
+    : anime.source === "weebcentral"
+      ? `/manga/weebcentral/${id}`
     : `/${type}/${id}`;
 
   return (
@@ -30,7 +32,7 @@ export default function AnimeCard({ anime, type = "anime" }) {
     >
       <Link to={href} className="block">
         {/* Card image */}
-        <div className="relative overflow-hidden z-11 rounded-lg aspect-[2/3] bg-surface-2">
+        <div className="anime-card-poster relative overflow-hidden z-11 rounded-lg aspect-[2/3] bg-surface-2">
           <img
             src={coverImage}
             alt={title}

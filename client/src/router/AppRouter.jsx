@@ -48,6 +48,10 @@ export default function AppRouter() {
               />
               <Route path="/anime/:id" element={<AnimeDetailsPage />} />
               <Route path="/manga" element={<MangaPage />} />
+              <Route
+                path="/manga/weebcentral/:id"
+                element={<MangaDetailsPage source="weebcentral" />}
+              />
               <Route path="/manga/:id" element={<MangaDetailsPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/login" element={<LoginPage />} />

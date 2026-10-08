@@ -44,6 +44,21 @@ const aniListAnimeDetailsQuery = `
         Media(id: $id, type: ANIME) {
             ${aniListMediaFields}
             trailer { id site }
+            characters(page: 1, perPage: 12, sort: ROLE) {
+                edges {
+                    role
+                    node {
+                        id
+                        name { full }
+                        image { large }
+                    }
+                    voiceActors(language: JAPANESE) {
+                        id
+                        name { full }
+                        image { large }
+                    }
+                }
+            }
             recommendations(perPage: 10, sort: RATING_DESC) {
                 nodes {
                     rating
@@ -108,6 +123,37 @@ const fetchAniListMedia = async (query, variables = {}) => {
 
     return response.data?.data
 }
+
+const normalizeAniListCast = (edges = []) =>
+    edges.flatMap(({ role, node, voiceActors = [] }) => {
+        return voiceActors.map((actor) => ({
+            id: actor.id,
+            name: actor.name?.full ?? 'Unknown',
+            image: actor.image?.large,
+            character: node.name?.full,
+            role,
+        }))
+    })
+
+const normalizeJikanCast = (entries = []) =>
+    entries.flatMap(({ character, role, voice_actors: voiceActors = [] }) => {
+        const japaneseActors = voiceActors.filter(
+            ({ language }) => language === 'Japanese',
+        )
+        const actors = japaneseActors.length > 0
+            ? japaneseActors
+            : voiceActors
+
+        return actors.map(({ person }) => ({
+            id: person.mal_id,
+            name: person.name || character.name || 'Unknown',
+            image:
+                person.images?.jpg?.image_url ||
+                character.images?.jpg?.image_url,
+            character: character.name,
+            role,
+        }))
+    })
 
 const relationName = (relation) => relation
     .toLowerCase()
@@ -294,6 +340,7 @@ const normalizeAniListAnime = (media) => {
         trailer: media.trailer?.site === 'youtube'
             ? { embed_url: `https://www.youtube-nocookie.com/embed/${media.trailer.id}` }
             : null,
+        cast: normalizeAniListCast(media.characters?.edges),
         relations: normalizeAniListRelations(media.relations?.edges),
         recommendations: (media.recommendations?.nodes ?? [])
             .map(({ mediaRecommendation }) => mediaRecommendation)
@@ -373,7 +420,35 @@ const animeService = {
     },
 
     // Single anime details
-    getAnimeById: (id) => jikan.get(`/anime/${id}/full`),
+    getAnimeById: async (id) => {
+        const [detailsResult, castResult] = await Promise.allSettled([
+            jikan.get(`/anime/${id}/full`),
+            jikan.get(`/anime/${id}/characters`),
+        ])
+
+        if (detailsResult.status === 'rejected') {
+            throw detailsResult.reason
+        }
+
+        const detailsResponse = detailsResult.value
+        const cast = castResult.status === 'fulfilled'
+            ? normalizeJikanCast(castResult.value.data?.data)
+            : []
+
+        return {
+            ...detailsResponse,
+            data: {
+                ...detailsResponse.data,
+                data: {
+                    ...detailsResponse.data.data,
+                    cast,
+                    castError: castResult.status === 'rejected'
+                        ? castResult.reason.message
+                        : null,
+                },
+            },
+        }
+    },
     getAniListAnimeById: async (id) => {
         const animeId = Number(id)
         if (!Number.isInteger(animeId) || animeId <= 0) {

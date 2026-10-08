@@ -1,7 +1,12 @@
 import AnimeCard from "../anime/animeCard/AnimeCard";
 import AnimeCardSkeleton from "../anime/animeCard/AnimeCardSkeleton";
 
-export default function Anime_MangaGrid({ items = [], isLoading, type = "anime" }) {
+export default function Anime_MangaGrid({
+  items = [],
+  isLoading,
+  error,
+  type = "anime",
+}) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -10,6 +15,14 @@ export default function Anime_MangaGrid({ items = [], isLoading, type = "anime" 
           .map((_, i) => (
             <AnimeCardSkeleton key={i} />
           ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div role="alert" className="py-16 text-center text-gray-400">
+        {error}
       </div>
     );
   }

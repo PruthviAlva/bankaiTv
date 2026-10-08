@@ -4,6 +4,7 @@ import { Star, Play, ArrowLeft } from "lucide-react";
 import { useAnimeDetails } from "../../hooks/useAnime";
 
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import CastSection from "../../components/anime/CastSection";
 import YoutubePlayer from "../../components/anime/YoutubePlayer";
 import RelatedAnime from "../../components/anime/RelatedAnime";
 
@@ -157,20 +158,7 @@ export default function AnimeDetailsPage({ source = "jikan" }) {
           </p>
         </section>
 
-        {[anime.title_english, anime.title_romaji, anime.title_native]
-          .filter((value, index, titles) => value && titles.indexOf(value) === index)
-          .length > 1 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold">Alternate titles</h2>
-              <ul className="space-y-1 text-sm text-gray-400">
-                {[anime.title_english, anime.title_romaji, anime.title_native]
-                  .filter((value, index, titles) => value && titles.indexOf(value) === index)
-                  .map((alternateTitle) => (
-                    <li key={alternateTitle}>{alternateTitle}</li>
-                  ))}
-              </ul>
-            </section>
-          )}
+        <CastSection cast={anime.cast} error={anime.castError} />
 
         <RelatedAnime
           relations={anime.relations}

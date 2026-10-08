@@ -40,7 +40,7 @@ export default function SearchPage() {
   }, [debouncedQuery, type, status]);
 
   // Search query — disabled until user types something
-  const { data, isLoading, isFetching } = useQuery({
+  const { data, isLoading, isFetching, isError } = useQuery({
     queryKey: ["search", debouncedQuery, type, status, page],
     queryFn: () => {
       if (type === "anime") {
@@ -131,7 +131,12 @@ export default function SearchPage() {
             </div>
           )}
 
-          <Anime_MangaGrid items={items} isLoading={isLoading} type={type} />
+          <Anime_MangaGrid
+            items={items}
+            isLoading={isLoading}
+            error={isError ? "Search is unavailable right now. Please try again." : null}
+            type={type}
+          />
 
           <Pagination
             currentPage={page}

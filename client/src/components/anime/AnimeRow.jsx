@@ -17,8 +17,10 @@ export default function AnimeRow({
   type = "anime",
 }) {
   const scrollerRef = useRef(null);
+  const rowRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [arrowTop, setArrowTop] = useState(null);
 
   const updateScrollButtons = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -30,11 +32,37 @@ export default function AnimeRow({
     );
   }, []);
 
+  const updateArrowPosition = useCallback(() => {
+    const row = rowRef.current;
+    const poster = scrollerRef.current?.querySelector(".anime-card-poster");
+    if (!row || !poster) {
+      setArrowTop(null);
+      return;
+    }
+
+    const rowBounds = row.getBoundingClientRect();
+    const posterBounds = poster.getBoundingClientRect();
+    setArrowTop(posterBounds.top - rowBounds.top + posterBounds.height / 2);
+  }, []);
+
   useEffect(() => {
     updateScrollButtons();
+    updateArrowPosition();
+
+    const row = rowRef.current;
+    const observer = row ? new ResizeObserver(updateArrowPosition) : null;
+    if (row) observer?.observe(row);
+    const poster = scrollerRef.current?.querySelector(".anime-card-poster");
+    if (poster) observer?.observe(poster);
+
     window.addEventListener("resize", updateScrollButtons);
-    return () => window.removeEventListener("resize", updateScrollButtons);
-  }, [animeList.length, isLoading, updateScrollButtons]);
+    window.addEventListener("resize", updateArrowPosition);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateScrollButtons);
+      window.removeEventListener("resize", updateArrowPosition);
+    };
+  }, [animeList.length, isLoading, updateArrowPosition, updateScrollButtons]);
 
   const scroll = (direction) => {
     const scroller = scrollerRef.current;
@@ -56,7 +84,7 @@ export default function AnimeRow({
           Unable to load {title.toLowerCase()}.
         </p>
       ) : (
-        <div className="group/row relative">
+        <div ref={rowRef} className="group/row relative">
           <div
             ref={scrollerRef}
             onScroll={updateScrollButtons}
@@ -106,7 +134,8 @@ export default function AnimeRow({
               type="button"
               aria-label={`Scroll ${title} left`}
               onClick={() => scroll(-1)}
-              className="absolute left-1 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/75 text-white shadow-lg backdrop-blur transition hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+              className="absolute left-1 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/75 text-white shadow-lg backdrop-blur transition hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+              style={arrowTop === null ? undefined : { top: arrowTop }}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -116,7 +145,8 @@ export default function AnimeRow({
               type="button"
               aria-label={`Scroll ${title} right`}
               onClick={() => scroll(1)}
-              className="absolute right-1 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/75 text-white shadow-lg backdrop-blur transition hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+              className="absolute right-1 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/75 text-white shadow-lg backdrop-blur transition hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+              style={arrowTop === null ? undefined : { top: arrowTop }}
             >
               <ChevronRight className="h-5 w-5" />
             </button>

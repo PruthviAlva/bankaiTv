@@ -1,6 +1,7 @@
 import axios from 'axios';
 import rateLimit from 'axios-rate-limit';
 
+import { api } from './authService';
 import { JIKAN_BASE_URL } from '../utils/constants';
 
 // Jikan has a rate limit: 3 req/sec, 60 req/min
@@ -16,18 +17,18 @@ const jikan = rateLimit(jikanRaw, { maxRequests: 1, perMilliseconds: 1000 })
 
 const mangaService = {
 
-    // Single manga details
+    // Legacy Jikan details route for older manga links.
     getMangaById: (id) =>
-    jikan.get(`/manga/${id}/full`),
+        jikan.get(`/manga/${id}/full`),
 
-    // All manga with filters (for /manga page)
-    getMangaList: (page = 1, filters = {}) => {
-        const params = new URLSearchParams({ page, limit: 24, ...filters })
-        return jikan.get(`/manga?${params}`)
-    },
+    getWeebCentralMangaById: (id) => api.get(`/manga/${id}`),
 
-    // Search
-    searchManga: (query, page = 1) => jikan.get(`/manga?q=${query}&page=${page}&limit=24`),
+    // Manga browsing and search are served by the Bankai API using WeebCentral data.
+    getMangaList: (page = 1, filters = {}) =>
+        api.get('/manga', { params: { page, ...filters } }),
+
+    searchManga: (query, page = 1) =>
+        api.get('/manga/search', { params: { q: query, page } }),
 }
 
 export default mangaService;
